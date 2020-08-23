@@ -1,3 +1,32 @@
+calamares (3.2.28.2-1parrot1) rolling-testing; urgency=medium
+
+  * Import new Debian version in Parrot.
+
+ -- Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>  Sun, 23 Aug 2020 22:03:43 +0200
+
+calamares (3.2.28.2-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jonathan Carter <jcc@debian.org>  Fri, 14 Aug 2020 11:09:21 +0200
+
+calamares (3.2.28.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jonathan Carter <jcc@debian.org>  Tue, 11 Aug 2020 11:48:45 +0200
+
+calamares (3.2.27-1) unstable; urgency=medium
+
+  * New upstream release
+  * Remove lintian false-positive spelling warning
+    (no longer needed)
+  * debian/rules:
+    - Export buildinfo path to make .buildinfo files reproducible
+  * Remove files no longer shipped from debian/copyright
+
+ -- Jonathan Carter <jcc@debian.org>  Wed, 15 Jul 2020 11:43:33 +0200
+
 calamares (3.2.26.1-1parrot1) rolling-testing; urgency=medium
 
   * Import new Debian release.
