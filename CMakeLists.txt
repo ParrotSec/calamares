@@ -1,20 +1,15 @@
-# === This file is part of Calamares - <https://github.com/calamares> ===
+# === This file is part of Calamares - <https://calamares.io> ===
 #
 #   SPDX-FileCopyrightText: 2017 Adriaan de Groot <groot@kde.org>
-#   SPDX-License-Identifier: GPL-3.0-or-later
+#   SPDX-License-Identifier: BSD-2-Clause
 #
-#   Calamares is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+###
 #
-#   Calamares is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU General Public License for more details.
+#   Calamares is Free Software: see the License-Identifier above.
 #
-#   You should have received a copy of the GNU General Public License
-#   along with Calamares. If not, see <http://www.gnu.org/licenses/>.
+#   Individual files may have different licenses (like the CMake
+#   infrastructure, which is BSD-2-Clause licensed). Check the SPDX
+#   identifiers in each file.
 #
 ###
 #
@@ -46,7 +41,7 @@
 # TODO:3.3: Require CMake 3.12
 cmake_minimum_required( VERSION 3.3 FATAL_ERROR )
 project( CALAMARES
-    VERSION 3.2.28.2
+    VERSION 3.2.33
     LANGUAGES C CXX )
 
 set( CALAMARES_VERSION_RC 0 )  # Set to 0 during release cycle, 1 during development
@@ -145,14 +140,15 @@ set( CALAMARES_DESCRIPTION_SUMMARY
 # NOTE: update these lines by running `txstats.py`, or for full automation
 #       `txstats.py -e`. See also
 #
-# Total 68 languages
-set( _tx_complete ca fi_FI he hr nl pt_BR sq tg tr_TR uk zh_TW )
-set( _tx_good as ast az az_AZ be cs_CZ da de es fr hi hu it_IT ja
-    ko lt ml pt_PT ru sk sv zh_CN )
-set( _tx_ok ar bg el en_GB es_MX es_PR et eu fa gl id is mr nb
-    pl ro sl sr sr@latin th )
-set( _tx_incomplete bn ca@valencia eo fr_CH gu ie kk kn lo lv mk ne_NP
-    ur uz )
+# Total 71 languages
+set( _tx_complete az az_AZ be ca cs_CZ da de fi_FI fur he hi hr ja
+    pt_BR sq sv tg uk vi zh_TW )
+set( _tx_good as ast es fa fr hu it_IT ko lt ml nl pt_PT ru sk
+    tr_TR zh_CN )
+set( _tx_ok ar bg bn el en_GB es_MX es_PR et eu gl id is mr nb pl
+    ro sl sr sr@latin th )
+set( _tx_incomplete ca@valencia eo fr_CH gu ie kk kn lo lv mk ne_NP
+    te ur uz )
 
 ### Required versions
 #
@@ -195,23 +191,30 @@ include( CMakeColors )
 
 ### C++ SETUP
 #
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -Werror=return-type" )
+set( CMAKE_CXX_FLAGS_DEBUG          "-g ${CMAKE_CXX_FLAGS_DEBUG}" )
+set( CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG" )
+set( CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG" )
+set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" )
+
 set( CMAKE_C_STANDARD 99 )
 set( CMAKE_C_STANDARD_REQUIRED ON )
-
 set( CMAKE_C_FLAGS                  "${CMAKE_C_FLAGS} -Wall" )
+set( CMAKE_C_FLAGS_DEBUG            "-g" )
+set( CMAKE_C_FLAGS_MINSIZEREL       "-Os -DNDEBUG" )
+set( CMAKE_C_FLAGS_RELEASE          "-O4 -DNDEBUG" )
+set( CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -g" )
+
+set( CMAKE_SHARED_LINKER_FLAGS      "-Wl,--no-undefined -Wl,--fatal-warnings" )
+
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     message( STATUS "Found Clang ${CMAKE_CXX_COMPILER_VERSION}, setting up Clang-specific compiler flags." )
-    set( CMAKE_C_FLAGS                  "${CMAKE_C_FLAGS} -Wall" )
-    set( CMAKE_C_FLAGS_DEBUG            "-g" )
-    set( CMAKE_C_FLAGS_MINSIZEREL       "-Os -DNDEBUG" )
-    set( CMAKE_C_FLAGS_RELEASE          "-O4 -DNDEBUG" )
-    set( CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -g" )
 
     # Clang warnings: doing *everything* is counter-productive, since it warns
     # about things which we can't fix (e.g. C++98 incompatibilities, but
-    # Calamares is C++14).
+    # Calamares is C++17).
     foreach( CLANG_WARNINGS
         -Weverything
         -Wno-c++98-compat
@@ -223,40 +226,26 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         -Wno-missing-prototypes
         -Wno-documentation-unknown-command
         -Wno-unknown-warning-option
-        -Werror=return-type
     )
         string( APPEND CMAKE_CXX_FLAGS " ${CLANG_WARNINGS}" )
     endforeach()
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOTREACHED='//' -DFALLTHRU='[[clang::fallthrough]]'")
 
     # Third-party code where we don't care so much about compiler warnings
     # (because it's uncomfortable to patch) get different flags; use
     #       mark_thirdparty_code( <file> [<file>...] )
     # to switch off warnings for those sources.
     set( SUPPRESS_3RDPARTY_WARNINGS "-Wno-everything" )
-    set( SUPPRESS_BOOST_WARNINGS " -Wno-zero-as-null-pointer-constant -Wno-disabled-macro-expansion" )
-
-    set( CMAKE_CXX_FLAGS_DEBUG          "-g ${CMAKE_CXX_FLAGS_DEBUG}" )
-    set( CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG" )
-    set( CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG" )
-    set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" )
 
     set( CMAKE_TOOLCHAIN_PREFIX "llvm-" )
-
-    set( CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined" )
 
     # The path prefix is only relevant for CMake 3.16 and later, fixes #1286
     set( CMAKE_AUTOMOC_PATH_PREFIX OFF )
     set( CALAMARES_AUTOMOC_OPTIONS "-butils/moc-warnings.h" )
     set( CALAMARES_AUTOUIC_OPTIONS --include utils/moc-warnings.h )
 else()
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-undefined" )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--fatal-warnings -Wnon-virtual-dtor -Woverloaded-virtual -Werror=return-type" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnon-virtual-dtor -Woverloaded-virtual" )
 
     set( SUPPRESS_3RDPARTY_WARNINGS "" )
-    set( SUPPRESS_BOOST_WARNINGS "" )
-
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOTREACHED='__builtin_unreachable();' -DFALLTHRU='/* */'" )
 endif()
 
 # Use mark_thirdparty_code() to reduce warnings from the compiler

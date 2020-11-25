@@ -8,3 +8,6 @@ calamares: package-name-doesnt-match-sonames
 
 # Debian live media relies on pkexec so this message isn't needed
 calamares: desktop-command-not-in-package usr/share/applications/calamares.desktop pkexec
+
+# False alarm
+calamares: hardening-no-bindnow

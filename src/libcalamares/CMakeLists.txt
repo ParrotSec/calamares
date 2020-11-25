@@ -1,20 +1,7 @@
-# === This file is part of Calamares - <https://github.com/calamares> ===
+# === This file is part of Calamares - <https://calamares.io> ===
 #
 #   SPDX-FileCopyrightText: 2020 Adriaan de Groot <groot@kde.org>
-#   SPDX-License-Identifier: GPL-3.0-or-later
-#
-#   Calamares is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   Calamares is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with Calamares. If not, see <http://www.gnu.org/licenses/>.
+#   SPDX-License-Identifier: BSD-2-Clause
 #
 
 #
@@ -52,6 +39,7 @@ set( libSources
     geoip/Handler.cpp
 
     # Locale-data service
+    locale/Global.cpp
     locale/Label.cpp
     locale/LabelModel.cpp
     locale/Lookup.cpp
@@ -60,9 +48,9 @@ set( libSources
     locale/TranslatableString.cpp
 
     # Modules
+    modulesystem/Descriptor.cpp
     modulesystem/InstanceKey.cpp
     modulesystem/Module.cpp
-    modulesystem/Requirement.cpp
     modulesystem/RequirementsChecker.cpp
     modulesystem/RequirementsModel.cpp
 
@@ -98,9 +86,6 @@ if( WITH_PYTHON )
         PythonJob.cpp
         PythonJobApi.cpp
     )
-    set_source_files_properties( PythonJob.cpp
-        PROPERTIES COMPILE_FLAGS "${SUPPRESS_BOOST_WARNINGS}"
-    )
 
     include_directories(${PYTHON_INCLUDE_DIRS})
     link_directories(${PYTHON_LIBRARIES})
@@ -126,30 +111,15 @@ endif()
 ### OPTIONAL KPMcore support
 #
 #
-find_package( KPMcore 3.3 )
-set_package_properties(
-    KPMcore PROPERTIES
-    URL "https://invent.kde.org/kde/kpmcore"
-    DESCRIPTION "KDE Partitioning library"
-    TYPE RECOMMENDED
-    PURPOSE "For partitioning service"
-)
+include( KPMcoreHelper )
 
 if ( KPMcore_FOUND )
     find_package( Qt5 REQUIRED DBus )  # Needed for KPMCore
     find_package( KF5 REQUIRED I18n WidgetsAddons )  # Needed for KPMCore
 
-    if( KPMcore_VERSION VERSION_GREATER_EQUAL "4.2" )
-        add_definitions(
-            -DWITH_KPMCORE42API
-            -DWITH_KPMCORE4API
-        ) # kpmcore 4.2 with new API
-    elseif( KPMcore_VERSION VERSION_GREATER_EQUAL "4.0" )
-        add_definitions( -DWITH_KPMCORE4API ) # kpmcore 4 with new API
-    elseif( KPMcore_VERSION VERSION_GREATER "3.3.70" )
-        message( FATAL_ERROR "KPMCore beta versions ${KPMcore_VERSION} not supported" )
-    endif()
-
+    foreach ( d ${KPMcore_API_DEFINITIONS} )
+        add_definitions( -D${d} )
+    endforeach()
     include_directories( ${KPMCORE_INCLUDE_DIR} )
     list( APPEND libSources
         partition/FileSystem.cpp
@@ -175,8 +145,8 @@ calamares_automoc( calamares )
 target_link_libraries( calamares
     LINK_PRIVATE
         ${OPTIONAL_PRIVATE_LIBRARIES}
-        yamlcpp
     LINK_PUBLIC
+        yamlcpp
         Qt5::Core
         KF5::CoreAddons
         ${OPTIONAL_PUBLIC_LIBRARIES}
@@ -224,22 +194,28 @@ calamares_add_test(
 )
 
 calamares_add_test(
-    libcalamaresutilstest
-    SOURCES
-        utils/Tests.cpp
-)
-
-calamares_add_test(
-    libcalamaresutilspathstest
-    SOURCES
-        utils/TestPaths.cpp
-)
-
-calamares_add_test(
     libcalamaresgeoiptest
     SOURCES
         geoip/GeoIPTests.cpp
         ${geoip_src}
+)
+
+calamares_add_test(
+    libcalamareslocaletest
+    SOURCES
+        locale/Tests.cpp
+)
+
+calamares_add_test(
+    libcalamaresmodulesystemtest
+    SOURCES
+        modulesystem/Tests.cpp
+)
+
+calamares_add_test(
+    libcalamaresnetworktest
+    SOURCES
+        network/Tests.cpp
 )
 
 calamares_add_test(
@@ -259,22 +235,17 @@ if( KPMcore_FOUND )
 endif()
 
 calamares_add_test(
-    libcalamareslocaletest
+    libcalamaresutilstest
     SOURCES
-        locale/Tests.cpp
+        utils/Tests.cpp
 )
 
 calamares_add_test(
-    libcalamaresnetworktest
+    libcalamaresutilspathstest
     SOURCES
-        network/Tests.cpp
+        utils/TestPaths.cpp
 )
 
-calamares_add_test(
-    libcalamaresmodulesystemtest
-    SOURCES
-        modulesystem/Tests.cpp
-)
 
 # This is not an actual test, it's a test / demo application
 # for experimenting with GeoIP.

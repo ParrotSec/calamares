@@ -1,25 +1,16 @@
-/* === This file is part of Calamares - <https://github.com/calamares> ===
+/* === This file is part of Calamares - <https://calamares.io> ===
  *
- *   Copyright 2014-2016, Teo Mrnjavac <teo@kde.org>
+ *   SPDX-FileCopyrightText: 2014-2016 Teo Mrnjavac <teo@kde.org>
+ *   SPDX-License-Identifier: GPL-3.0-or-later
  *
- *   Calamares is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   Calamares is Free Software: see the License-Identifier above.
  *
- *   Calamares is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with Calamares. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef PARTITIONACTIONS_H
 #define PARTITIONACTIONS_H
 
-#include "utils/NamedEnum.h"
+#include "core/Config.h"
 
 #include <QSet>
 #include <QString>
@@ -36,43 +27,15 @@ namespace PartitionActions
  */
 namespace Choices
 {
-/** @brief Choice of swap (size and type) */
-enum SwapChoice
-{
-    NoSwap,  // don't create any swap, don't use any
-    ReuseSwap,  // don't create, but do use existing
-    SmallSwap,  // up to 8GiB of swap
-    FullSwap,  // ensureSuspendToDisk -- at least RAM size
-    SwapFile  // use a file (if supported)
-};
-using SwapChoiceSet = QSet< SwapChoice >;
-const NamedEnumTable< SwapChoice >& swapChoiceNames();
-
-/** @brief Given a set of swap choices, return a sensible value from it.
- *
- * "Sensible" here means: if there is one value, use it; otherwise, use
- * NoSwap if there are no choices, or if NoSwap is one of the choices, in the set.
- * If that's not possible, any value from the set.
- */
-SwapChoice pickOne( const SwapChoiceSet& s );
-
-enum InstallChoice
-{
-    NoChoice,
-    Alongside,
-    Erase,
-    Replace,
-    Manual
-};
-const NamedEnumTable< InstallChoice >& installChoiceNames();
-
 struct ReplacePartitionOptions
 {
+    QString defaultPartitionTableType;  // e.g. "gpt" or "msdos"
     QString defaultFsType;  // e.g. "ext4" or "btrfs"
     QString luksPassphrase;  // optional
 
-    ReplacePartitionOptions( const QString& fs, const QString& luks )
-        : defaultFsType( fs )
+    ReplacePartitionOptions( const QString& pt, const QString& fs, const QString& luks )
+        : defaultPartitionTableType( pt )
+        , defaultFsType( fs )
         , luksPassphrase( luks )
     {
     }
@@ -82,14 +45,15 @@ struct AutoPartitionOptions : ReplacePartitionOptions
 {
     QString efiPartitionMountPoint;  // optional, e.g. "/boot"
     quint64 requiredSpaceB;  // estimated required space for root partition
-    SwapChoice swap;
+    Config::SwapChoice swap;
 
-    AutoPartitionOptions( const QString& fs,
+    AutoPartitionOptions( const QString& pt,
+                          const QString& fs,
                           const QString& luks,
                           const QString& efi,
                           qint64 requiredBytes,
-                          SwapChoice s )
-        : ReplacePartitionOptions( fs, luks )
+                          Config::SwapChoice s )
+        : ReplacePartitionOptions( pt, fs, luks )
         , efiPartitionMountPoint( efi )
         , requiredSpaceB( requiredBytes > 0 ? static_cast< quint64 >( requiredBytes ) : 0 )
         , swap( s )
