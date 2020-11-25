@@ -1,21 +1,12 @@
-/* === This file is part of Calamares - <https://github.com/calamares> ===
+/* === This file is part of Calamares - <https://calamares.io> ===
  *
- *   Copyright 2014-2016, Teo Mrnjavac <teo@kde.org>
- *   Copyright 2018-2019, Adriaan de Groot <groot@kde.org>
- *   Copyright 2019, Collabora Ltd
+ *   SPDX-FileCopyrightText: 2014-2016 Teo Mrnjavac <teo@kde.org>
+ *   SPDX-FileCopyrightText: 2018-2019 Adriaan de Groot <groot@kde.org>
+ *   SPDX-FileCopyrightText: 2019 Collabora Ltd
+ *   SPDX-License-Identifier: GPL-3.0-or-later
  *
- *   Calamares is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   Calamares is Free Software: see the License-Identifier above.
  *
- *   Calamares is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with Calamares. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef CHOICEPAGE_H
@@ -24,8 +15,8 @@
 #include "ui_ChoicePage.h"
 
 
+#include "core/Config.h"
 #include "core/OsproberEntry.h"
-#include "core/PartitionActions.h"
 
 #include <QMutex>
 #include <QPointer>
@@ -51,7 +42,7 @@ class PartitionCoreModule;
 
 class Device;
 
-using SwapChoiceSet = QSet< PartitionActions::Choices::SwapChoice >;
+using SwapChoiceSet = Config::SwapChoiceSet;
 
 /**
  * @brief The ChoicePage class is the first page of the partitioning interface.
@@ -62,10 +53,8 @@ class ChoicePage : public QWidget, private Ui::ChoicePage
 {
     Q_OBJECT
 public:
-    using InstallChoice = PartitionActions::Choices::InstallChoice;
-
     explicit ChoicePage( Config* config, QWidget* parent = nullptr );
-    virtual ~ChoicePage();
+    ~ChoicePage() override;
 
     /**
      * @brief init runs when the PartitionViewStep and the PartitionCoreModule are
@@ -82,13 +71,6 @@ public:
     bool isNextEnabled() const;
 
     /**
-     * @brief currentChoice returns the enum Choice value corresponding to the
-     * currently selected partitioning mode (with a PrettyRadioButton).
-     * @return the enum Choice value.
-     */
-    InstallChoice currentChoice() const;
-
-    /**
      * @brief onLeave runs when control passes from this page to another one.
      */
     void onLeave();
@@ -97,7 +79,7 @@ public:
      * @brief applyActionChoice reacts to a choice of partitioning mode.
      * @param choice the partitioning action choice.
      */
-    void applyActionChoice( ChoicePage::InstallChoice choice );
+    void applyActionChoice( Config::InstallChoice choice );
 
     int lastSelectedDeviceIndex();
     void setLastSelectedDeviceIndex( int index );
@@ -123,6 +105,7 @@ private:
     bool calculateNextEnabled() const;
     void updateNextEnabled();
     void setupChoices();
+    void checkInstallChoiceRadioButton( Config::InstallChoice choice );  ///< Sets the chosen button to "on"
     QComboBox* createBootloaderComboBox( QWidget* parentButton );
     Device* selectedDevice();
 
@@ -132,7 +115,7 @@ private:
     void continueApplyDeviceChoice();  // .. called after scan
 
     void updateDeviceStatePreview();
-    void updateActionChoicePreview( ChoicePage::InstallChoice choice );
+    void updateActionChoicePreview( Config::InstallChoice choice );
     void setupActions();
     OsproberEntryList getOsproberEntriesForDevice( Device* device ) const;
     void doAlongsideApply();
@@ -146,8 +129,6 @@ private:
     PartitionCoreModule* m_core;
 
     QMutex m_previewsMutex;
-
-    InstallChoice m_choice;
 
     bool m_isEfi;
     QComboBox* m_drivesCombo;
@@ -170,14 +151,12 @@ private:
     QPointer< QLabel > m_efiLabel;
     QPointer< QComboBox > m_efiComboBox;
 
-    int m_lastSelectedDeviceIndex;
+    int m_lastSelectedDeviceIndex = -1;
+    int m_lastSelectedActionIndex = -1;
 
+    QStringList m_requiredPartitionTableType;
     QString m_defaultFsType;
     bool m_enableEncryptionWidget;
-    SwapChoiceSet m_availableSwapChoices;  // What is available
-    PartitionActions::Choices::SwapChoice m_eraseSwapChoice;  // what is selected
-
-    bool m_allowManualPartitioning;
 
     QMutex m_coreMutex;
 };

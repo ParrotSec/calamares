@@ -1,8 +1,7 @@
-/* === This file is part of Calamares - <https://github.com/calamares> ===
+/* === This file is part of Calamares - <https://calamares.io> ===
  *
  *  SPDX-FileCopyrightText: 2018 Adriaan de Groot <groot@kde.org>
  *  SPDX-License-Identifier: GPL-3.0-or-later
- *  License-Filename: LICENSE
  *
  */
 
@@ -42,7 +41,7 @@ class PLUGINDLLEXPORT PreserveFiles : public Calamares::CppJob
 
 public:
     explicit PreserveFiles( QObject* parent = nullptr );
-    virtual ~PreserveFiles() override;
+    ~PreserveFiles() override;
 
     QString prettyName() const override;
 

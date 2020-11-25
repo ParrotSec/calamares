@@ -1,21 +1,11 @@
-/* === This file is part of Calamares - <https://github.com/calamares> ===
+/* === This file is part of Calamares - <https://calamares.io> ===
  *
  *   SPDX-FileCopyrightText: 2014-2016 Teo Mrnjavac <teo@kde.org>
  *   SPDX-FileCopyrightText: 2017-2019 Adriaan de Groot <groot@kde.org>
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
- *   Calamares is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   Calamares is Free Software: see the License-Identifier above.
  *
- *   Calamares is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with Calamares. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "LocalePage.h"
@@ -101,10 +91,16 @@ LocalePage::LocalePage( Config* config, QWidget* parent )
 
     // Set up the location before connecting signals, to avoid a signal
     // storm as various parts interact.
-    m_regionCombo->setModel( m_config->regionModel() );
-    m_zoneCombo->setModel( m_config->regionalZonesModel() );
-    locationChanged( m_config->currentLocation() );  // doesn't inform TZ widget
-    m_tzWidget->setCurrentLocation( m_config->currentLocation() );
+    {
+        auto* regions = m_config->regionModel();
+        auto* zones = m_config->regionalZonesModel();
+        auto* location = m_config->currentLocation();
+        zones->setRegion( location->region() );
+        m_regionCombo->setModel( regions );
+        m_zoneCombo->setModel( zones );
+        m_tzWidget->setCurrentLocation( location );
+        locationChanged( location );  // doesn't inform TZ widget
+    }
 
     connect( config, &Config::currentLCStatusChanged, m_formatsLabel, &QLabel::setText );
     connect( config, &Config::currentLanguageStatusChanged, m_localeLabel, &QLabel::setText );
