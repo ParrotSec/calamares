@@ -3,11 +3,10 @@ Section: utils
 Priority: optional
 Maintainer: Jonathan Carter <jcc@debian.org>
 Build-Depends: cmake,
-               cryptsetup,
+               cryptsetup <!nocheck>,
                debhelper-compat (= 13),
                extra-cmake-modules,
                gettext,
-               libatasmart-dev,
                libboost-python-dev,
                libkf5config-dev,
                libkf5coreaddons-dev,
@@ -25,10 +24,10 @@ Build-Depends: cmake,
                libqt5svg5-dev,
                libqt5webkit5-dev,
                libyaml-cpp-dev,
-               os-prober,
+               os-prober <!nocheck>,
                pkg-config,
                pkg-kde-tools,
-               policykit-1,
+               policykit-1 <!nocheck>,
                python3-dev,
                qml-module-qtquick-layouts,
                qml-module-qtquick-privatewidgets,
@@ -38,7 +37,7 @@ Build-Depends: cmake,
                qtdeclarative5-dev,
                qttools5-dev,
                qttools5-dev-tools
-Standards-Version: 4.5.0
+Standards-Version: 4.5.1
 Rules-Requires-Root: no
 Homepage: https://github.com/calamares/calamares
 Vcs-Browser: https://salsa.debian.org/qt-kde-team/extras/calamares

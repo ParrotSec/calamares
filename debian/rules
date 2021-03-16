@@ -4,7 +4,7 @@
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
 # Help makes build paths reproducible
-export DEB_BUILD_OPTIONS=buildinfo=+path
+export DEB_BUILD_MAINT_OPTIONS=buildinfo=+path
 
 %:
 	dh $@ --with kf5

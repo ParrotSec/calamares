@@ -1,3 +1,34 @@
+calamares (3.2.36-1parrot1) rolling; urgency=medium
+
+  * Import new Upstream release.
+
+ -- Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>  Tue, 16 Mar 2021 02:38:39 +0100
+
+calamares (3.2.36-1) unstable; urgency=medium
+
+  [ Helmet Grohne ]
+
+  * Reduce Build-Depends: (Closes: #983052)
+    + Annotate test dependencies cryptsetup, os-prober and policykit-1 with
+      profile <!nocheck>.
+    + Drop unused libatasmart-dev.
+
+  [ Jonathan Carter ]
+
+  * New upstream release
+  * Update standards version to 4.5.1
+  * Update copyright years and fix indentation
+  * Replace DEB_BUILD_OPTIONS with DEB_BUILD_MAINT_OPTIONS
+
+ -- Jonathan Carter <jcc@debian.org>  Wed, 10 Feb 2021 21:04:17 +0200
+
+calamares (3.2.35.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jonathan Carter <jcc@debian.org>  Tue, 08 Dec 2020 16:22:17 +0200
+
+
 calamares (3.2.33-1parrot1) rolling-testing; urgency=medium
 
   * Import new Debian version.

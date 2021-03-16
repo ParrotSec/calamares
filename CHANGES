@@ -7,6 +7,96 @@ contributors are listed. Note that Calamares does not have a historical
 changelog -- this log starts with version 3.2.0. The release notes on the
 website will have to do for older versions.
 
+# 3.2.36 (2021-02-03) #
+
+This release contains contributions from (alphabetically by first name):
+ - Anubhav Choudhary
+ - benne-dee
+ - Gaël PORTAY
+ - Jonas Strassel
+ - Kevin Kofler
+ - Matti Hyttinen
+ - Neal Gompa
+
+## Core ##
+ - It is now possible to hide the *next* and *back* buttons during
+   the "exec" phase of installation. Thanks Anubhav.
+ - The Calamares CI has migrated to GitHub actions. Thanks Jonas.
+
+## Modules ##
+ - *bootloader* now uses the current file names for the UEFI Secure Boot
+   shim instead of obsolete ones.
+ - The *mount* module creates swap in its own subvolume, if btrfs is used.
+   Thanks Matti.
+ - *partition* includes more information about what it will do, including
+   GPT partition types (in human-readable format, if possible). Thanks Gaël.
+ - Some edge-cases with overlay filesystems have been resolved in the
+   *partition* module. Thanks Gaël.
+ - During the creation of filesystems and partitions, automounting is
+   turned off (if DBus is available, and the host system supports
+   KDE Solid automount control). This should reduce the number of
+   failed installations if automount grabs partitions while they are
+   being created. The code is prepared to handle other ways to control
+   automount-behavior as well.
+
+
+# 3.2.35.1 (2020-12-07) #
+
+This release contains contributions from (alphabetically by first name):
+ - Anubhav Choudhary
+ - Matti Hyttinen
+
+Some strange string artifacts appeared, leading to `{1?}` being
+displayed in various user-facing messages. These have been removed
+and the translations updated.
+
+## Modules ##
+ - The *initcpiocfg* module would sometimes configure the system to ask
+   for a passphrase, when none is needed.
+
+
+# 3.2.35 (2020-11-30) #
+
+This release contains contributions from (alphabetically by first name):
+ - Clarissa Borges
+ - Matti Hyttinen
+
+A new kind of issue template has been added for Calamares,
+for reporting (and adding tests for) usability issues. Thanks
+to Clarissa for leading that effort.
+
+## Core ##
+ - No core changes yet
+
+## Modules ##
+ - The *partition* module now supports a not-full-disk-encryption setup,
+   where `/boot` is not encrypted, but the rest of the system is.
+ - The *plasmalnf* module has been substantially rewritten, so that it
+   can support a QML version of the module in future. The UI has changed
+   a little, and now displays more themes than before.
+
+
+# 3.2.34 (2020-11-16) #
+
+This release contains contributions from (alphabetically by first name):
+ - Artem Grinev
+ - Gaël PORTAY
+
+## Core ##
+ - No core changes yet
+
+## Modules ##
+ - The *keyboard* module had a regression in which it no-longer painted
+   the keycaps in the keyboard preview. (reported by Vinnie)
+ - The *plasmalnf* module did not set all of the look-and-feel values
+   in the target system. (reported by Bluestar Linux)
+ - In the *users* module, warnings about the strength of the password
+   are now correctly pluralized when possible.
+ - In the *users* module, if ICU is installed, the user's full name is
+   automatically transliterated to US-ASCII (for some locales; this will
+   need tweaking) so that the login name is acceptable. (Thanks Artem)
+
+
 # 3.2.33 (2020-11-09) #
 
 This release contains contributions from (alphabetically by first name):
