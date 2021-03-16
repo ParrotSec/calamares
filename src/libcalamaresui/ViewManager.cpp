@@ -19,6 +19,7 @@
 #include "utils/Logger.h"
 #include "utils/Paste.h"
 #include "utils/Retranslator.h"
+#include "utils/String.h"
 #include "viewpages/BlankViewStep.h"
 #include "viewpages/ExecutionViewStep.h"
 #include "viewpages/ViewStep.h"
@@ -30,10 +31,11 @@
 #include <QMetaObject>
 
 #define UPDATE_BUTTON_PROPERTY( name, value ) \
+    do \
     { \
         m_##name = value; \
         emit name##Changed( m_##name ); \
-    }
+    } while ( false )
 
 namespace Calamares
 {
@@ -136,15 +138,14 @@ ViewManager::insertViewStep( int before, ViewStep* step )
     emit endInsertRows();
 }
 
-
 void
 ViewManager::onInstallationFailed( const QString& message, const QString& details )
 {
     bool shouldOfferWebPaste = false;  // TODO: config var
 
-    cError() << "Installation failed:";
-    cDebug() << "- message:" << message;
-    cDebug() << "- details:" << details;
+    cError() << "Installation failed:" << message;
+    cDebug() << Logger::SubEntry << "- message:" << message;
+    cDebug() << Logger::SubEntry << "- details:" << Logger::NoQuote << details;
 
     QString heading
         = Calamares::Settings::instance()->isSetupMode() ? tr( "Setup Failed" ) : tr( "Installation Failed" );
@@ -152,7 +153,10 @@ ViewManager::onInstallationFailed( const QString& message, const QString& detail
     QString text = "<p>" + message + "</p>";
     if ( !details.isEmpty() )
     {
-        text += "<p>" + details + "</p>";
+        text += "<p>"
+            + CalamaresUtils::truncateMultiLine( details, CalamaresUtils::LinesStartEnd { 6, 2 } )
+                  .replace( '\n', QStringLiteral( "<br/>" ) )
+            + "</p>";
     }
     if ( shouldOfferWebPaste )
     {
@@ -365,10 +369,11 @@ ViewManager::next()
         {
             // Reached the end in a weird state (e.g. no finished step after an exec)
             executing = false;
-            UPDATE_BUTTON_PROPERTY( nextEnabled, false )
-            UPDATE_BUTTON_PROPERTY( backEnabled, false )
+            UPDATE_BUTTON_PROPERTY( nextEnabled, false );
+            UPDATE_BUTTON_PROPERTY( backEnabled, false );
         }
         updateCancelEnabled( !settings->disableCancel() && !( executing && settings->disableCancelDuringExec() ) );
+        updateBackAndNextVisibility( !( executing && settings->hideBackAndNextDuringExec() ) );
     }
     else
     {
@@ -377,8 +382,8 @@ ViewManager::next()
 
     if ( m_currentStep < m_steps.count() )
     {
-        UPDATE_BUTTON_PROPERTY( nextEnabled, !executing && m_steps.at( m_currentStep )->isNextEnabled() )
-        UPDATE_BUTTON_PROPERTY( backEnabled, !executing && m_steps.at( m_currentStep )->isBackEnabled() )
+        UPDATE_BUTTON_PROPERTY( nextEnabled, !executing && m_steps.at( m_currentStep )->isNextEnabled() );
+        UPDATE_BUTTON_PROPERTY( backEnabled, !executing && m_steps.at( m_currentStep )->isBackEnabled() );
     }
 
     updateButtonLabels();
@@ -400,26 +405,26 @@ ViewManager::updateButtonLabels()
     // If we're going into the execution step / install phase, other message
     if ( stepIsExecute( m_steps, m_currentStep + 1 ) )
     {
-        UPDATE_BUTTON_PROPERTY( nextLabel, nextIsInstallationStep )
-        UPDATE_BUTTON_PROPERTY( nextIcon, "run-install" )
+        UPDATE_BUTTON_PROPERTY( nextLabel, nextIsInstallationStep );
+        UPDATE_BUTTON_PROPERTY( nextIcon, "run-install" );
     }
     else
     {
-        UPDATE_BUTTON_PROPERTY( nextLabel, tr( "&Next" ) )
-        UPDATE_BUTTON_PROPERTY( nextIcon, "go-next" )
+        UPDATE_BUTTON_PROPERTY( nextLabel, tr( "&Next" ) );
+        UPDATE_BUTTON_PROPERTY( nextIcon, "go-next" );
     }
 
     // Going back is always simple
-    UPDATE_BUTTON_PROPERTY( backLabel, tr( "&Back" ) )
-    UPDATE_BUTTON_PROPERTY( backIcon, "go-previous" )
+    UPDATE_BUTTON_PROPERTY( backLabel, tr( "&Back" ) );
+    UPDATE_BUTTON_PROPERTY( backIcon, "go-previous" );
 
     // Cancel button changes label at the end
     if ( isAtVeryEnd( m_steps, m_currentStep ) )
     {
-        UPDATE_BUTTON_PROPERTY( quitLabel, tr( "&Done" ) )
-        UPDATE_BUTTON_PROPERTY( quitTooltip, quitOnCompleteTooltip )
-        UPDATE_BUTTON_PROPERTY( quitVisible, true )
-        UPDATE_BUTTON_PROPERTY( quitIcon, "dialog-ok-apply" )
+        UPDATE_BUTTON_PROPERTY( quitLabel, tr( "&Done" ) );
+        UPDATE_BUTTON_PROPERTY( quitTooltip, quitOnCompleteTooltip );
+        UPDATE_BUTTON_PROPERTY( quitVisible, true );
+        UPDATE_BUTTON_PROPERTY( quitIcon, "dialog-ok-apply" );
         updateCancelEnabled( true );
         if ( settings->quitAtEnd() )
         {
@@ -430,14 +435,14 @@ ViewManager::updateButtonLabels()
     {
         if ( settings->disableCancel() )
         {
-            UPDATE_BUTTON_PROPERTY( quitVisible, false )
+            UPDATE_BUTTON_PROPERTY( quitVisible, false );
         }
         updateCancelEnabled( !settings->disableCancel()
                              && !( stepIsExecute( m_steps, m_currentStep ) && settings->disableCancelDuringExec() ) );
 
-        UPDATE_BUTTON_PROPERTY( quitLabel, tr( "&Cancel" ) )
-        UPDATE_BUTTON_PROPERTY( quitTooltip, cancelBeforeInstallationTooltip )
-        UPDATE_BUTTON_PROPERTY( quitIcon, "dialog-cancel" )
+        UPDATE_BUTTON_PROPERTY( quitLabel, tr( "&Cancel" ) );
+        UPDATE_BUTTON_PROPERTY( quitTooltip, cancelBeforeInstallationTooltip );
+        UPDATE_BUTTON_PROPERTY( quitIcon, "dialog-cancel" );
     }
 }
 
@@ -467,11 +472,11 @@ ViewManager::back()
         return;
     }
 
-    UPDATE_BUTTON_PROPERTY( nextEnabled, m_steps.at( m_currentStep )->isNextEnabled() )
+    UPDATE_BUTTON_PROPERTY( nextEnabled, m_steps.at( m_currentStep )->isNextEnabled() );
     UPDATE_BUTTON_PROPERTY( backEnabled,
                             ( m_currentStep == 0 && m_steps.first()->isAtBeginning() )
                                 ? false
-                                : m_steps.at( m_currentStep )->isBackEnabled() )
+                                : m_steps.at( m_currentStep )->isBackEnabled() );
 
     updateButtonLabels();
 }
@@ -524,8 +529,14 @@ ViewManager::confirmCancelInstallation()
 void
 ViewManager::updateCancelEnabled( bool enabled )
 {
-    UPDATE_BUTTON_PROPERTY( quitEnabled, enabled )
+    UPDATE_BUTTON_PROPERTY( quitEnabled, enabled );
     emit cancelEnabled( enabled );
+}
+
+void
+ViewManager::updateBackAndNextVisibility( bool visible )
+{
+    UPDATE_BUTTON_PROPERTY( backAndNextVisible, visible );
 }
 
 QVariant
